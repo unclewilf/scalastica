@@ -1,4 +1,12 @@
-scala-patterns
+scalastica
 ==============
 
-Currently just contains some worksheets from functional programming in scala book
+A functional scala DSL for ElasticSearch
+
+Current Libraries:
+-argonaut for JSON
+-dispatch for HTTP
+-specs2 for testing
+
+
+

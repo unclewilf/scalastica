@@ -4,9 +4,8 @@ import org.specs2.mutable.{Around, Specification}
 import org.specs2.execute.AsResult
 import org.elasticsearch.node.{NodeBuilder, Node}
 import argonaut.{Json, Parse}
-import dispatch._, Defaults._
+import dispatch._
 import scalaz._
-import Scalaz._
 import scala.concurrent.ExecutionContext
 
 class SimpleIndexTest extends Specification {
