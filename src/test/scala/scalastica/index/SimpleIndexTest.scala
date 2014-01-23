@@ -5,34 +5,27 @@ import org.specs2.execute.AsResult
 import org.elasticsearch.node.{NodeBuilder, Node}
 import argonaut.{Json, Parse}
 import dispatch._, Defaults._
+import scalaz._
+import Scalaz._
+import scala.concurrent.ExecutionContext
 
 class SimpleIndexTest extends Specification {
+  implicit val ec:ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   val example: Json = Parse.parseOption("{\"hello\" : \"world\"}").get
 
-  def indexExample: Json = {
-    val res = indexer.index("test-index", "test", example).apply()
-    res match {
-      case Right(x) => Parse.parseOption(x).get
-      case Left(_) => throw new RuntimeException
-    }
+  def indexExample: Throwable \/ Json = {
+    Index.
+      index("test-index", "test", example).
+      map(\/.fromEither(_).map(Parse.parseOption(_).get)).apply()
   }
 
   "The elastic search indexer" should {
     "index a simple json snippet" in {
-      elastic.around(
-        indexExample.fieldOrFalse("ok").bool.get must beTrue
-      )
-    }
-  }
-
-  object indexer {
-
-    def index(in: String, ty: String, json: Json): Future[Either[Throwable, String]] = {
-      val req = url("http://localhost:9200/" + in + "/" + ty + "/").POST
-        .setBody(json.toString)
-        .addHeader("Content-type", "application/json")
-      Http(req OK as.String).either
+      elastic.around {
+        val fieldOrFalse = indexExample.map(_.fieldOrFalse("ok").bool.get)
+        fieldOrFalse must be equalTo \/-(true)
+      }
     }
   }
 
